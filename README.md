@@ -42,7 +42,7 @@ Here are the 'ssnc' codes defined so far:
  * `pend` -- play stream end. No arguments
  * `pfls` -- play stream flush. No arguments
  * `prsm` -- play stream resume. No arguments
- * `pvol` -- play volume. The volume is sent as a string -- "airplay_volume,volume,lowest_volume,highest_volume,has_true_mute,is_muted", where "volume", "lowest_volume" and "highest_volume" are given in dB; "is_muted" is 1 if [true] mute is enabled, 0 otherwise. The "airplay_volume" is what's sent by the soource (e.g. iTunes) to the player, and is from 0.00 down to -30.00, with -144.00 meaning "mute". This is linear on the volume control slider of iTunes or iOS AirPlay
+ * `pvol` -- play volume. The volume is sent as a string -- "airplay_volume,volume,lowest_volume,highest_volume", where "volume", "lowest_volume" and "highest_volume" are given in dB. The "airplay_volume" is what's sent by the source (e.g. iTunes) to the player, and is from 0.00 down to -30.00, with -144.00 meaning "mute". This is linear on the volume control slider of iTunes or iOS AirPlay
  * `prgr` -- progress -- this is metadata from AirPlay consisting of RTP timestamps for the start of the current play sequence, the current play point and the end of the play sequence. The timestamps probabably wrap at 2^32.
  * `mdst` -- a sequence of metadata is about to start
  * `mden` -- a sequence of metadata has ended
