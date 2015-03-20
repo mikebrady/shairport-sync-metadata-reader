@@ -47,5 +47,5 @@ Here are the 'ssnc' codes defined so far:
  * `mdst` -- a sequence of metadata is about to start
  * `mden` -- a sequence of metadata has ended
  * `snam` -- the name of the originator -- e.g. "Joe's iPhone" or "iTunes...".
- * `stal` -- this is an error message meaning that reception of a large piece of metadata, usually a large picture, has stalled. bad things may happen. It seems to be a bug in iTunes.
+ * `stal` -- this is an error message meaning that reception of a large piece of metadata, usually a large picture, has stalled; bad things may happen. It seems to be a bug in iTunes.
  
