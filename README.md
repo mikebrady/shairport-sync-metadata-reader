@@ -33,7 +33,7 @@ Metadata is not used directly by Shairport Sync. Instead, it is routed to a pipe
  * `core` for all the regular metadadata coming from iTunes, etc., or
  * `ssnc` (for 'shairport-sync') for all metadata coming from Shairport Sync itself, such as start/end delimiters, etc.
 
-* For `core` metadata, the second 4-character code is the 4-character metadata code that comes from iTunes etc. See this https://code.google.com/p/ytrack/wiki/DMAP for information. The original data supplied by the source, if any, follows, and is encoded in base64 format. The length of the data is also provided.
+* For `core` metadata, the second 4-character code is the 4-character metadata code that comes from iTunes etc. See, for example, https://code.google.com/p/ytrack/wiki/DMAP for information about the significance of the codes. The original data supplied by the source, if any, follows, and is encoded in base64 format. The length of the data is also provided.
 * For `ssnc` metadata, the second 4-character code is used to distinguish the messages. Cover art, coming from the source, is not tagged in the same way as other metadata, it seems, so is sent as an `ssnc` type metadata message with the code `PICT`. Progress information, similarly, is not tagged like other source-originated metadata, so it is sent as an `ssnc` type with the code `prgr`.
 
 Here are the 'ssnc' codes defined so far:
