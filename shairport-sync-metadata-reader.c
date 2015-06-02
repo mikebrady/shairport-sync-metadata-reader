@@ -254,7 +254,9 @@ int main(void) {
           }
        }
      } else {
-      printf("Tag set expected, got \"%s\" instead.\n",str);
+      // hack -- just ignore the <item> and </item> tags, which better be on separate lines!
+      if ((fscanf(stdin,"<item>")!=0) && (fscanf(stdin,"</item>")!=0))
+        printf("Tag set expected, got \"%s\" instead.\n",str);
      }
    }
   return 0;
