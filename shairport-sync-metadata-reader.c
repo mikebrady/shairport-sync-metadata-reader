@@ -166,7 +166,7 @@ int main(void) {
     // now, parse it to see if it's a tag
     uint32_t type,code,length;
     char tagend[1024];
-    int ret = sscanf(str,"<type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
+    int ret = sscanf(str,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
     if (ret==3) {
       // now, think about processing the tag. 
       // basically, we need to get hold of the base-64 data, if any
@@ -205,7 +205,7 @@ int main(void) {
             printf("couldn't allocate memory for base-64 stuff\n");
           }
           rc = fscanf(stdin,"%64s",datatagend);
-          if (strcmp(datatagend,"</data>")!=0) 
+          if (strcmp(datatagend,"</data></item>")!=0) 
             printf("End data tag not seen, \"%s\" seen instead.\n",datatagend);
         }
       } 
@@ -253,11 +253,7 @@ int main(void) {
             printf("\"%s\" \"%s\": \"%s\".\n",typestring,codestring,payload);
           }
        }
-     } else {
-      // hack -- just ignore the <item> and </item> tags, which better be on separate lines!
-      if ((fscanf(stdin,"<item>")!=0) && (fscanf(stdin,"</item>")!=0))
-        printf("Tag set expected, got \"%s\" instead.\n",str);
-     }
+     } 
    }
   return 0;
 }
