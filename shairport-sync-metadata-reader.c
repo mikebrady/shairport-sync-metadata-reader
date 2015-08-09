@@ -47,7 +47,7 @@ static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
                                 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
                                 'w', 'x', 'y', 'z', '0', '1', '2', '3',
                                 '4', '5', '6', '7', '8', '9', '+', '/'};
-static int decoding_table[64];
+static int decoding_table[256]; // an incoming char can range over ASCII, but by mistake could be all 8 bits.
 
 static int mod_table[] = {0, 2, 1};
 
