@@ -5,5 +5,6 @@ Make the shairport-sync-metadata-reader directory the default and perform the fo
 $autoreconf -f -i
 $./configure
 $make
+$sudo make install
 
 That's it.
