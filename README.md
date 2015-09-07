@@ -49,4 +49,12 @@ Here are the 'ssnc' codes defined so far:
  * `snam` -- a device e.g. "Joe's iPhone" has started a play session. Specifically, it's the "X-Apple-Client-Name" string.
  * `snua` -- a "user agent" e.g. "iTunes/12..." has started a play session. Specifically, it's the "User-Agent" string.
  * `stal` -- this is an error message meaning that reception of a large piece of metadata, usually a large picture, has stalled; bad things may happen. The stalling phenomenon seems to be a bug in iTunes.
- 
+
+Building Instructions
+=====
+```
+$autoreconf -i -f
+$./configure
+$make
+$sudo make install
+```
