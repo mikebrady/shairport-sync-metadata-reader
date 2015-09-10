@@ -51,7 +51,7 @@ Here are the 'ssnc' codes defined so far:
  * `stal` -- this is an error message meaning that reception of a large piece of metadata, usually a large picture, has stalled; bad things may happen. The stalling phenomenon seems to be a bug in iTunes.
 
 The next two two tokens are to facilitiate remote control of the source. The is some information at http://nto.github.io/AirPlay.html about remote control of the source.
- * `daid` -- this is the source's DACP-ID, useful if you want to remotely control the source. Use this string to identify the source's remote control on the network.
+ * `daid` -- this is the source's DACP-ID (if it has one -- it's not guaranteed), useful if you want to remotely control the source. Use this string to identify the source's remote control on the network.
  * `acre` -- this is the source's Active-Remote token, necessary if you want to send commands to the source's remote control (if it has one).
 
 Building Instructions
