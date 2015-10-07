@@ -254,6 +254,9 @@ int main(void) {
           }
        }
      } 
+
+     // flush stdout, to be able to pipe it later
+     fflush(stdout);
    }
   return 0;
 }
