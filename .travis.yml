@@ -1,7 +1,2 @@
 language: c
-addons:
-  apt:
-    packages:
-    - automake
-    - autoconf
 script: autoreconf -fi && ./configure && make
