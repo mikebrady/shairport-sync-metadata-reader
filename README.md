@@ -51,8 +51,8 @@ Here are the 'ssnc' codes defined so far:
  * `prgr` -- progress -- this is metadata from AirPlay consisting of RTP timestamps for the start of the current play sequence, the current play point and the end of the play sequence.
  * `mdst` -- a sequence of metadata is about to start. The RTP timestamp associated with the metadata sequence is included as data, if available.
  * `mden` -- a sequence of metadata has ended. The RTP timestamp associated with the metadata sequence is included as data, if available.
- * `mdst` -- a picture is about to be sent. The RTP timestamp associated with the metadata sequence is included as data, if available.
- * `mden` -- a picture has been sent. The RTP timestamp associated with the metadata sequence is included as data, if available.
+ * `pcst` -- a picture is about to be sent. The RTP timestamp associated with it is included as data, if available.
+ * `pcen` -- a picture has been sent. The RTP timestamp associated with it is included as data, if available.
  * `snam` -- a device e.g. "Joe's iPhone" has started a play session. Specifically, it's the "X-Apple-Client-Name" string.
  * `snua` -- a "user agent" e.g. "iTunes/12..." has started a play session. Specifically, it's the "User-Agent" string.
  * `stal` -- this is an error message meaning that reception of a large piece of metadata, usually a large picture, has stalled; bad things may happen. The stalling phenomenon seems to be a bug in iTunes.
