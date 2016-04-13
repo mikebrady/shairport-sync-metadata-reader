@@ -46,7 +46,8 @@ Here are the 'ssnc' codes defined so far:
  * `pend` -- play stream end. No arguments
  * `pfls` -- play stream flush. No arguments
  * `prsm` -- play stream resume. No arguments
- * `pvol` -- play volume. The volume is sent as a string -- "airplay_volume,volume,lowest_volume,highest_volume", where "volume", "lowest_volume" and "highest_volume" are given in dB. The "airplay_volume" is what's sent by the source (e.g. iTunes) to the player, and is from 0.00 down to -30.00, with -144.00 meaning "mute". This is linear on the volume control slider of iTunes or iOS AirPlay
+ * `pvol` -- play volume. The volume is sent as a string -- "airplay_volume,volume,lowest_volume,highest_volume", where "volume", "lowest_volume" and "highest_volume" are given in dB. The "airplay_volume" is what's sent by the source (e.g. iTunes) to the player, and is from 0.00 down to -30.00, with -144.00 meaning "mute". This is linear on the volume control slider of iTunes or iOS AirPlay. If the volume setting is being ignored by Shairport Sync itself, the volume, lowest_volume and highest_volume values are zero.
+ * 
  * `prgr` -- progress -- this is metadata from AirPlay consisting of RTP timestamps for the start of the current play sequence, the current play point and the end of the play sequence.
  * `mdst` -- a sequence of metadata is about to start. The RTP timestamp associated with the metadata sequence is included as data, if available.
  * `mden` -- a sequence of metadata has ended. The RTP timestamp associated with the metadata sequence is included as data, if available.
