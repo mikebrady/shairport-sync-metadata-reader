@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 
 
 // From Stack Overflow, with thanks:
@@ -143,7 +144,7 @@ int main(void) {
   
   while (1) {
     int tag_found = 0;
-    char str[1024];
+    char str[1025];
     while (tag_found==0) {
       retval = select(1, &rfds, NULL, NULL, NULL);
       /* Don’t rely on the value of tv now! */
@@ -253,7 +254,10 @@ int main(void) {
             printf("\"%s\" \"%s\": \"%s\".\n",typestring,codestring,payload);
           }
        }
-     } 
+     } else {
+        str[1024]='\0';
+        printf("\nXXX Could not decipher: \"%s\".\n",str);
+     }
 
      // flush stdout, to be able to pipe it later
      fflush(stdout);
