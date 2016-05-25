@@ -137,130 +137,111 @@ int main(void) {
   int retval;
   
   initialise_decoding_table();
-
-  /* Watch stdin (fd 0) to see when it has input. */
-  FD_ZERO(&rfds);
-  FD_SET(0, &rfds);
   
   while (1) {
-    int tag_found = 0;
     char str[1025];
-    while (tag_found==0) {
-      retval = select(1, &rfds, NULL, NULL, NULL);
-      /* Don’t rely on the value of tv now! */
-      if (retval == -1)
-        perror("select()");
-      else if (retval) {
-        char *rp;
-        rp = fgets (str, 1024, stdin);
-        if (rp!=NULL) {
-          if (str[0]=='<') {
-          tag_found=1;// now check if the first character is '<'
-//          } else {
-//            printf(".\n");
-          }
-        }
-        /* FD_ISSET(0, &rfds) will be true. */
-      } else
-        printf("No data.\n");
-    }
-    // now, parse it to see if it's a tag
-    uint32_t type,code,length;
-    char tagend[1024];
-    int ret = sscanf(str,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
-    if (ret==3) {
-      // now, think about processing the tag. 
-      // basically, we need to get hold of the base-64 data, if any
-      size_t outputlength=0;
-      char payload[32769];
-      if (length>0) {
-        // get the next line, which should be a data tag
-        char datatagstart[64],datatagend[64];
-        memset(datatagstart,0,64);
-        int rc = fscanf(stdin,"<data encoding=\"base64\">");
-        if (rc==0) {
-          // now, read in that big (possibly) base64 buffer
-          int c = fgetc(stdin);
-          uint32_t b64size = 4*((length+2)/3);
-          char * b64buf = malloc(b64size+1);
-          memset(b64buf,0,b64size+1);
-          if (b64buf) {
-            if (fgets(b64buf, b64size+1, stdin)!=NULL) {
-              // it looks like we got it
-              // printf("Looks like we got it, with a buffer size of %u.\n",b64size);
-              //puts(b64buf);
-              //printf("\n");
-              // now, if it's not a picture, let's try to decode it.
-              if (code!='PICT') {
-                int inputlength=32678;
-                if (b64size<inputlength)
-                  inputlength=b64size;
-                outputlength=32768;
-                if (base64_decode(b64buf,inputlength,payload,&outputlength)!=0) {
-                  printf("Failed to decode it.\n");
+    if (fgets (str, 1024, stdin)) {
+      uint32_t type,code,length;
+      char tagend[1024];
+      int ret = sscanf(str,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
+      if (ret==3) {
+        // now, think about processing the tag. 
+        // basically, we need to get hold of the base-64 data, if any
+        size_t outputlength=0;
+        char payload[32769];
+        if (length>0) {
+          // get the next line, which should be a data tag
+          char datatagstart[64],datatagend[64];
+          memset(datatagstart,0,64);
+          int rc = fscanf(stdin,"<data encoding=\"base64\">");
+          if (rc==0) {
+            // now, read in that big (possibly) base64 buffer
+            int c = fgetc(stdin);
+            uint32_t b64size = 4*((length+2)/3);
+            char * b64buf = malloc(b64size+1);
+            memset(b64buf,0,b64size+1);
+            if (b64buf) {
+              if (fgets(b64buf, b64size+1, stdin)!=NULL) {
+                // it looks like we got it
+                // printf("Looks like we got it, with a buffer size of %u.\n",b64size);
+                //puts(b64buf);
+                //printf("\n");
+                // now, if it's not a picture, let's try to decode it.
+                if (code!='PICT') {
+                  int inputlength=32678;
+                  if (b64size<inputlength)
+                    inputlength=b64size;
+                  outputlength=32768;
+                  if (base64_decode(b64buf,inputlength,payload,&outputlength)!=0) {
+                    printf("Failed to decode it.\n");
+                  }
                 }
               }
+              free(b64buf);
+            } else {
+              printf("couldn't allocate memory for base-64 stuff\n");
             }
-            free(b64buf);
-          } else {
-            printf("couldn't allocate memory for base-64 stuff\n");
+            rc = fscanf(stdin,"%64s",datatagend);
+            if (strcmp(datatagend,"</data></item>")!=0) 
+              printf("End data tag not seen, \"%s\" seen instead.\n",datatagend);
+            // now, there will either be a line feed or nothing at the end of this line
+            // it's not necessary XML, but it's what Shairport Sync puts out, and it makes life a bit easier
+            // So, if there's something there and it's not just a linefeed, it's an error
+            if ((fgets (str, 1024, stdin)!=NULL) && ((strlen(str)!=1) || (str[0]!=0x0A)))
+              printf("Error -- unexpected characters at the end of a base64 section.\n");
           }
-          rc = fscanf(stdin,"%64s",datatagend);
-          if (strcmp(datatagend,"</data></item>")!=0) 
-            printf("End data tag not seen, \"%s\" seen instead.\n",datatagend);
-        }
-      } 
+        } 
      
-      // printf("Got it decoded. Length of decoded string is %u bytes.\n",outputlength);
-      payload[outputlength]=0;
+        // printf("Got it decoded. Length of decoded string is %u bytes.\n",outputlength);
+        payload[outputlength]=0;
 
-      // this has more information about tags, which might be relevant:
-      // https://code.google.com/p/ytrack/wiki/DMAP
-      switch (code) {
-        case 'asal':
-          printf("Album Name: \"%s\".\n",payload);
-          break;
-        case 'asar':
-          printf("Artist: \"%s\".\n",payload);
-          break;
-        case 'ascm':
-          printf("Comment: \"%s\".\n",payload);
-          break;
-        case 'asgn':
-          printf("Genre: \"%s\".\n",payload);
-          break;
-        case 'minm':
-          printf("Title: \"%s\".\n",payload);
-          break;
-        case 'ascp':
-          printf("Composer: \"%s\".\n",payload);
-          break;                    
-        case 'asdt':
-          printf("File kind: \"%s\".\n",payload);
-          break;  
-        case 'assn':                
-          printf("Sort as: \"%s\".\n",payload);
-          break;
-        case 'PICT':
-          printf("Picture received, length %u bytes.\n",length);    
-          break;               
-        default: if (type=='ssnc') {
-            char typestring[5];
-            *(uint32_t*)typestring = htonl(type);
-            typestring[4]=0;
-            char codestring[5];
-            *(uint32_t*)codestring = htonl(code);
-            codestring[4]=0;
-            printf("\"%s\" \"%s\": \"%s\".\n",typestring,codestring,payload);
-          }
+        // this has more information about tags, which might be relevant:
+        // https://code.google.com/p/ytrack/wiki/DMAP
+        switch (code) {
+          case 'asal':
+            printf("Album Name: \"%s\".\n",payload);
+            break;
+          case 'asar':
+            printf("Artist: \"%s\".\n",payload);
+            break;
+          case 'ascm':
+            printf("Comment: \"%s\".\n",payload);
+            break;
+          case 'asgn':
+            printf("Genre: \"%s\".\n",payload);
+            break;
+          case 'minm':
+            printf("Title: \"%s\".\n",payload);
+            break;
+          case 'ascp':
+            printf("Composer: \"%s\".\n",payload);
+            break;                    
+          case 'asdt':
+            printf("File kind: \"%s\".\n",payload);
+            break;  
+          case 'assn':                
+            printf("Sort as: \"%s\".\n",payload);
+            break;
+          case 'PICT':
+            printf("Picture received, length %u bytes.\n",length);    
+            break;               
+          default: if (type=='ssnc') {
+              char typestring[5];
+              *(uint32_t*)typestring = htonl(type);
+              typestring[4]=0;
+              char codestring[5];
+              *(uint32_t*)codestring = htonl(code);
+              codestring[4]=0;
+              printf("\"%s\" \"%s\": \"%s\".\n",typestring,codestring,payload);
+            }
+         }
+       } else {
+          str[1024]='\0';
+          printf("\nXXX Could not decipher: \"%s\".\n",str);
        }
-     } else {
-        str[1024]='\0';
-        printf("\nXXX Could not decipher: \"%s\".\n",str);
+       // flush stdout, to be able to pipe it later
+       fflush(stdout);
      }
-
-     // flush stdout, to be able to pipe it later
-     fflush(stdout);
    }
   return 0;
 }
