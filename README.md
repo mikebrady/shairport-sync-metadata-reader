@@ -42,6 +42,7 @@ Here are more details:
 
 Here are the 'ssnc' codes defined so far:
  * `PICT` -- the payload is a picture, either a JPEG or a PNG. Check the first few bytes to see which.
+ * `clip` -- the payload is the IP number of the client, i.e. the sender of audio. Can be an IPv4 or an IPv6 number.
  * `pbeg` -- play stream begin. No arguments
  * `pend` -- play stream end. No arguments
  * `pfls` -- play stream flush. No arguments

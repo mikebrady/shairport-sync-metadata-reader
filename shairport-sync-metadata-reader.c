@@ -225,6 +225,9 @@ int main(void) {
           case 'PICT':
             printf("Picture received, length %u bytes.\n",length);    
             break;               
+          case 'clip':
+            printf("Client's IP: \"%s\".\n",payload);
+            break;
           default: if (type=='ssnc') {
               char typestring[5];
               *(uint32_t*)typestring = htonl(type);
