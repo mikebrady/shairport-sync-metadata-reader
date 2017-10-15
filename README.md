@@ -61,6 +61,8 @@ Here are the 'ssnc' codes defined so far:
 The next two two tokens are to facilitiate remote control of the source. There is some information at http://nto.github.io/AirPlay.html about remote control of the source.
  * `daid` -- this is the source's DACP-ID (if it has one -- it's not guaranteed), useful if you want to remotely control the source. Use this string to identify the source's remote control on the network.
  * `acre` -- this is the source's Active-Remote token, necessary if you want to send commands to the source's remote control (if it has one).
+ * `dapo` -- the payload is the port number (as text) of the source's remote control, to which commands should be sent. It is 3689 for iTunes but varies for iOS devices.
+
 
 Building Instructions
 =====
