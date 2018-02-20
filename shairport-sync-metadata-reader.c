@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Mike Brady
+Copyright (c) 2015-18 Mike Brady
 
 A text-only sample metadata player for Shairport Sync
 
@@ -198,6 +198,15 @@ int main(void) {
         // this has more information about tags, which might be relevant:
         // https://code.google.com/p/ytrack/wiki/DMAP
         switch (code) {
+          case 'mper':
+            {
+            uint32_t v = ntohl(*(uint32_t*)payload);
+            printf("Persistent ID: \"%u\".\n",v);
+            }
+            break;
+          case 'asul':
+            printf("URL: \"%s\".\n",payload);
+            break;
           case 'asal':
             printf("Album Name: \"%s\".\n",payload);
             break;
