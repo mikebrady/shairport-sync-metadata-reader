@@ -56,7 +56,7 @@ Here are the 'ssnc' codes defined so far:
  * `pcen` -- a picture has been sent. The RTP timestamp associated with it is included as data, if available.
  * `snam` -- a device e.g. "Joe's iPhone" has started a play session. Specifically, it's the "X-Apple-Client-Name" string.
  * `snua` -- a "user agent" e.g. "iTunes/12..." has started a play session. Specifically, it's the "User-Agent" string.
- * `stal` -- this is an error message meaning that reception of a large piece of metadata, usually a large picture, has stalled; bad things may happen. The stalling phenomenon seems to be a bug in iTunes.
+ * `stal` -- this is an error message meaning that reception of a large piece of metadata, usually a large picture, has stalled; bad things may happen.
 
 The next two two tokens are to facilitiate remote control of the source. There is some information at http://nto.github.io/AirPlay.html about remote control of the source.
  * `daid` -- this is the source's DACP-ID (if it has one -- it's not guaranteed), useful if you want to remotely control the source. Use this string to identify the source's remote control on the network.
