@@ -168,7 +168,7 @@ int main(void) {
                 //printf("\n");
                 // now, if it's not a picture, let's try to decode it.
                 if (code!='PICT') {
-                  int inputlength=32678;
+                  int inputlength=32768;
                   if (b64size<inputlength)
                     inputlength=b64size;
                   outputlength=32768;
