@@ -204,7 +204,7 @@ int main(void) {
             printf("Persistent ID: \"%u\".\n",v);
             // Itunes API via Applescript reports this as a 64 bit number.
             uint64_t v64 = (*(uint64_t*)payload);
-            printf("Persistant ID 64: \"%X%X\".\n"
+            printf("Persistent ID 64: \"%X%X\".\n"
               , ntohl(v64 & 0xFFFFFFFF) // Lower
               , ntohl(v64 >> 32));  // Upper
             }
