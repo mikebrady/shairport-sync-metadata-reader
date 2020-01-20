@@ -1,0 +1,5 @@
+Version 1.0.2
+Treat an 'mper' tag as a 64-bit number and print it in hex, similar to the way it appears in
+AppleScript.
+Many thanks to Scott Simon (https://github.com/zutroy97) for finding the bug and proposing a fix --
+see https://github.com/mikebrady/shairport-sync-metadata-reader/pull/19.
