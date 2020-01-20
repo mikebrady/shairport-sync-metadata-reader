@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015-18 Mike Brady
+Copyright (c) 2015-20 Mike Brady
 
 A text-only sample metadata player for Shairport Sync
 
@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <string.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
 
@@ -66,11 +67,11 @@ char *base64_encode(const unsigned char *data,
                     char *encoded_data,
                     size_t *output_length) {
 
-    size_t calculated_output_length = 4 * ((input_length + 2) / 3);    
+    size_t calculated_output_length = 4 * ((input_length + 2) / 3);
     if (calculated_output_length> *output_length)
       return(NULL);
     *output_length = calculated_output_length;
-    
+
     int i,j;
     for (i = 0, j = 0; i < input_length;) {
 
@@ -104,13 +105,13 @@ int base64_decode(const char *data,
 
     if (input_length % 4 != 0) return -1;
 
-    size_t calculated_output_length = input_length / 4 * 3; 
+    size_t calculated_output_length = input_length / 4 * 3;
     if (data[input_length - 1] == '=') calculated_output_length--;
     if (data[input_length - 2] == '=') calculated_output_length--;
     if (calculated_output_length> *output_length)
       return(-1);
     *output_length = calculated_output_length;
- 
+
     int i,j;
     for (i = 0, j = 0; i < input_length;) {
 
@@ -135,9 +136,9 @@ int base64_decode(const char *data,
 int main(void) {
   fd_set rfds;
   int retval;
-  
+
   initialise_decoding_table();
-  
+
   while (1) {
     char str[1025];
     if (fgets (str, 1024, stdin)) {
@@ -145,7 +146,7 @@ int main(void) {
       char tagend[1024];
       int ret = sscanf(str,"<item><type>%8x</type><code>%8x</code><length>%u</length>",&type,&code,&length);
       if (ret==3) {
-        // now, think about processing the tag. 
+        // now, think about processing the tag.
         // basically, we need to get hold of the base-64 data, if any
         size_t outputlength=0;
         char payload[32769];
@@ -182,7 +183,7 @@ int main(void) {
               printf("couldn't allocate memory for base-64 stuff\n");
             }
             rc = fscanf(stdin,"%64s",datatagend);
-            if (strcmp(datatagend,"</data></item>")!=0) 
+            if (strcmp(datatagend,"</data></item>")!=0)
               printf("End data tag not seen, \"%s\" seen instead.\n",datatagend);
             // now, there will either be a line feed or nothing at the end of this line
             // it's not necessary XML, but it's what Shairport Sync puts out, and it makes life a bit easier
@@ -190,8 +191,8 @@ int main(void) {
             if ((fgets (str, 1024, stdin)!=NULL) && ((strlen(str)!=1) || (str[0]!=0x0A)))
               printf("Error -- unexpected characters at the end of a base64 section.\n");
           }
-        } 
-     
+        }
+
         // printf("Got it decoded. Length of decoded string is %u bytes.\n",outputlength);
         payload[outputlength]=0;
 
@@ -200,8 +201,26 @@ int main(void) {
         switch (code) {
           case 'mper':
             {
-            uint32_t v = ntohl(*(uint32_t*)payload);
-            printf("Persistent ID: \"%u\".\n",v);
+
+              // the following is just diagnostic
+              // {
+              // printf("'mper' payload is %d bytes long: ", length);
+              // char* p = payload;
+              // int c;
+              // for (c=0; c < length; c++) {
+              //   printf("%02x", *p);
+              //   p++;
+              // }
+              // printf("\n");
+              // }
+
+            // get the 64-bit number as a uint64_t by reading two uint32_t s and combining them
+            uint64_t vl = ntohl(*(uint32_t*)payload); // get the high order 32 bits
+            vl = vl << 32; // shift them into the correct location
+            uint64_t ul = ntohl(*(uint32_t*)(payload+sizeof(uint32_t))); // and the low order 32 bits
+            vl = vl + ul;
+            printf("Persistent ID: \"%" PRIx64 "\".\n",vl);
+
             }
             break;
           case 'asul':
@@ -224,16 +243,16 @@ int main(void) {
             break;
           case 'ascp':
             printf("Composer: \"%s\".\n",payload);
-            break;                    
+            break;
           case 'asdt':
             printf("File kind: \"%s\".\n",payload);
-            break;  
-          case 'assn':                
+            break;
+          case 'assn':
             printf("Sort as: \"%s\".\n",payload);
             break;
           case 'PICT':
-            printf("Picture received, length %u bytes.\n",length);    
-            break;               
+            printf("Picture received, length %u bytes.\n",length);
+            break;
           case 'clip':
             printf("Client's IP: \"%s\".\n",payload);
             break;
