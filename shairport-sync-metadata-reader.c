@@ -136,9 +136,10 @@ int base64_decode(const char *data,
 int main(void) {
   fd_set rfds;
   int retval;
+  int imgincr=0;
 
   initialise_decoding_table();
-
+  FILE *img;
   while (1) {
     char str[1025];
     if (fgets (str, 1024, stdin)) {
@@ -149,7 +150,7 @@ int main(void) {
         // now, think about processing the tag.
         // basically, we need to get hold of the base-64 data, if any
         size_t outputlength=0;
-        char payload[32769];
+        char payload[1000000];
         if (length>0) {
           // get the next line, which should be a data tag
           char datatagstart[64],datatagend[64];
@@ -168,15 +169,15 @@ int main(void) {
                 //puts(b64buf);
                 //printf("\n");
                 // now, if it's not a picture, let's try to decode it.
-                if (code!='PICT') {
-                  int inputlength=32768;
+                //if (code!='PICT') {
+                  int inputlength=999999;
                   if (b64size<inputlength)
                     inputlength=b64size;
-                  outputlength=32768;
+                  outputlength=999999;
                   if (base64_decode(b64buf,inputlength,payload,&outputlength)!=0) {
                     printf("Failed to decode it.\n");
                   }
-                }
+                //}
               }
               free(b64buf);
             } else {
@@ -252,6 +253,12 @@ int main(void) {
             break;
           case 'PICT':
             printf("Picture received, length %u bytes.\n",length);
+            imgincr+=1;
+            char charint[17];
+            snprintf(charint, 17, "IMG_A%d", imgincr);
+            img = fopen(charint, "w");
+            fwrite(payload, length, 1, img);
+            fclose(img);
             break;
           case 'clip':
             printf("Client's IP: \"%s\".\n",payload);
