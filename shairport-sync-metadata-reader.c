@@ -252,13 +252,14 @@ int main(void) {
             printf("Sort as: \"%s\".\n",payload);
             break;
           case 'PICT':
-            printf("Picture received, length %u bytes.\n",length);
+            printf("Image length: \"%u\".\n",length);
             imgincr+=1;
             char charint[17];
             snprintf(charint, 17, "IMG_A%d", imgincr);
             img = fopen(charint, "w");
             fwrite(payload, length, 1, img);
             fclose(img);
+            printf("Image name: \"%s\".\n",charint);
             break;
           case 'clip':
             printf("Client's IP: \"%s\".\n",payload);
