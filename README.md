@@ -62,6 +62,21 @@ The next two two tokens are to facilitiate remote control of the source. There i
  * `daid` -- this is the source's DACP-ID (if it has one -- it's not guaranteed), useful if you want to remotely control the source. Use this string to identify the source's remote control on the network.
  * `acre` -- this is the source's Active-Remote token, necessary if you want to send commands to the source's remote control (if it has one).
  * `dapo` -- the payload is the port number (as text) of the source's remote control, to which commands should be sent. It is 3689 for iTunes but varies for iOS devices.
+ * `clip` -- the payload is the IP number of the client, i.e. the sender of audio. It can be an IPv4 or an IPv6 number.
+ *           In AirPlay 2 operation, it is sent as soon
+ *           as the client has exclusive access to the player and after any existing
+ *           play session has been interrupted and terminated.
+ * `conn` -- the payload is the IP number of the client, i.e. the sender of audio.
+ *           Can be an IPv4 or an IPv6 number. This is an AirPlay-2-only message.
+ *           It is sent as soon as the client requests access to the player. 
+ *           If Shairport Sync is already playing, this message is sent before the current
+ *           play session is stopped.
+ * `svip` -- the payload is the IP number of the server, i.e. the player itself.
+ *           Can be an IPv4 or an IPv6 number.
+ * `disc` -- the payload is the IP number of the client, i.e. the sender of audio.
+ *           Can be an IPv4 or an IPv6 number. This is an AirPlay-2-only message.
+ *           It is sent when a client has been disconnected.
+
 
 
 Building Instructions
