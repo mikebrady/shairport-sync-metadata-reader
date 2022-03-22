@@ -254,7 +254,16 @@ int main(void) {
             printf("Picture received, length %u bytes.\n",length);
             break;
           case 'clip':
-            printf("Client's IP: \"%s\".\n",payload);
+            printf("The AirPlay 2 client at \"%s\" has started a play session.\n",payload);
+            break;
+          case 'svip':
+            printf("The address used by Shairport Sync for this play session is: \"%s\".\n",payload);
+            break;
+          case 'conn':
+            printf("The AirPlay 2 client at \"%s\" is about to select this player. (AirPlay 2 only.)\n",payload);
+            break;
+          case 'disc':
+            printf("The AirPlay 2 client at \"%s\" has released this player. (AirPlay 2 only.)\n",payload);
             break;
           default: if (type=='ssnc') {
               char typestring[5];
