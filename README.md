@@ -62,7 +62,6 @@ The next two two tokens are to facilitiate remote control of the source. There i
  * `daid` -- this is the source's DACP-ID (if it has one -- it's not guaranteed), useful if you want to remotely control the source. Use this string to identify the source's remote control on the network.
  * `acre` -- this is the source's Active-Remote token, necessary if you want to send commands to the source's remote control (if it has one).
  * `dapo` -- the payload is the port number (as text) of the source's remote control, to which commands should be sent. It is 3689 for iTunes but varies for iOS devices.
- * `clip` -- the payload is the IP number of the client, i.e. the sender of audio. It can be an IPv4 or an IPv6 number.
  *           In AirPlay 2 operation, it is sent as soon
  *           as the client has exclusive access to the player and after any existing
  *           play session has been interrupted and terminated.
