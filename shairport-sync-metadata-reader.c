@@ -270,6 +270,9 @@ int main(int argc, char *argv[]) {
           case 'asdt':
             printf("File kind: \"%s\".\n", payload);
             break;
+          case 'asdk':
+            printf("Song Data Kind: (possibly 0 == timed track, 1 == untimed stream): \"%u\".\n", payload[0]);
+            break;
           case 'assn':
             printf("Sort as: \"%s\".\n", payload);
             break;
@@ -298,7 +301,7 @@ int main(int argc, char *argv[]) {
             printf("Picture received, length %u bytes.\n", length);
             break;
           case 'clip':
-            printf("The AirPlay client at \"%s\" has started a play session.\n", payload);
+            printf("The AirPlay client at \"%s\" has connected to this player.\n", payload);
             break;
           case 'pvol':
             printf("Volume: \"%s\".\n", payload);
@@ -324,16 +327,22 @@ int main(int argc, char *argv[]) {
           case 'svip':
             printf("The address used by this player for this play session is: \"%s\".\n", payload);
             break;
-          case 'svnm':
-            printf("The Service Name of this player is: \"%s\".\n", payload);
+          case 'svna':
+            printf("The service name of this player is: \"%s\".\n", payload);
+            break;
+          case 'ofps':
+            printf("The output rate of the player is: \"%s\" frames per second.\n", payload);
+            break;
+          case 'ofmt':
+            printf("The output format of the player is: \"%s\".\n", payload);
             break;
           case 'conn':
             printf(
-                "The AirPlay client at \"%s\" is about to select this player. (AirPlay 2 only.)\n",
+                "The AirPlay client at \"%s\" is about to connect to this player. (AirPlay 2 only.)\n",
                 payload);
             break;
           case 'disc':
-            printf("The AirPlay client at \"%s\" has released this player. (AirPlay 2 only.)\n",
+            printf("The AirPlay client at \"%s\" has disconnected from this player. (AirPlay 2 only.)\n",
                    payload);
             break;
           case 'cdid':
@@ -344,6 +353,9 @@ int main(int argc, char *argv[]) {
             break;
           case 'prgr':
             printf("Progress String \"%s\".\n", payload);
+            break;
+          case 'styp':
+            printf("Stream type: \"%s\".\n", payload);
             break;
           default: {
             char codestring[5];
