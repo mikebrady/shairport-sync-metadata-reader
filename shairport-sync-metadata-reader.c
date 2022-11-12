@@ -242,9 +242,10 @@ int main(int argc, char *argv[]) {
             printf("Persistent ID: \"%" PRIx64 "\".\n", vl);
 
           } break;
-          case 'astm':
+          case 'astm': {
             uint32_t tracklength = ntohl(*(uint32_t *)payload);
             printf("Track length: %" PRIu32 " milliseconds.\n", tracklength);
+            }
             break;
           case 'asul':
             printf("URL: \"%s\".\n", payload);
