@@ -355,6 +355,12 @@ int main(int argc, char *argv[]) {
           case 'prgr':
             printf("Progress String \"%s\".\n", payload);
             break;
+          case 'phb0':
+            printf("First frame/time: \"%s\".\n", payload);
+            break;
+          case 'phbt':
+            printf("Playing frame/time: \"%s\".\n", payload);
+            break;
           case 'styp':
             printf("Stream type: \"%s\".\n", payload);
             break;
