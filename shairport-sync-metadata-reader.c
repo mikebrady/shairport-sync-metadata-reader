@@ -239,7 +239,7 @@ int main(int argc, char *argv[]) {
             uint64_t ul =
                 ntohl(*(uint32_t *)(payload + sizeof(uint32_t))); // and the low order 32 bits
             vl = vl + ul;
-            printf("Persistent ID: \"%" PRIx64 "\".\n", vl);
+            printf("Persistent ID: 0x%" PRIx64 ".\n", vl);
 
           } break;
           case 'astm': {
@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) {
             printf("File kind: \"%s\".\n", payload);
             break;
           case 'asdk':
-            printf("Song Data Kind: (possibly 0 == timed track, 1 == untimed stream): \"%u\".\n", payload[0]);
+            printf("Song Data Kind (\"asdk\"): (possibly 0 == timed track, 1 == untimed stream): \"%u\".\n", payload[0]);
             break;
           case 'assn':
             printf("Sort as: \"%s\".\n", payload);
@@ -331,12 +331,6 @@ int main(int argc, char *argv[]) {
           case 'svna':
             printf("The service name of this player is: \"%s\".\n", payload);
             break;
-          case 'ofps':
-            printf("The output rate of the player is: \"%s\" frames per second.\n", payload);
-            break;
-          case 'ofmt':
-            printf("The output format of the player is: \"%s\".\n", payload);
-            break;
           case 'conn':
             printf(
                 "The AirPlay client at \"%s\" is about to connect to this player. (AirPlay 2 only.)\n",
@@ -355,6 +349,12 @@ int main(int argc, char *argv[]) {
           case 'prgr':
             printf("Progress String \"%s\".\n", payload);
             break;
+          case 'sdsc':
+            printf("Source Format \"%s\".\n", payload);
+            break;
+          case 'odsc':
+            printf("Output Format \"%s\".\n", payload);
+            break;
           case 'phb0':
             printf("First frame/time: \"%s\".\n", payload);
             break;
@@ -363,6 +363,30 @@ int main(int argc, char *argv[]) {
             break;
           case 'styp':
             printf("Stream type: \"%s\".\n", payload);
+            break;
+          case 'pffr':
+            printf("Play -- first frame received/time in ns: \"%s\".\n", payload);
+            break;
+          case 'paus':
+            printf("Pause. (AirPlay 2 only.)\n", payload);
+            break;
+          case 'pres':
+            printf("Resume. (AirPlay 2 only.)\n", payload);
+            break;
+          case 'prsm':
+            printf("Resume.\n", payload);
+            break;
+          case 'pend':
+            printf("Play Session End.\n", payload);
+            break;
+          case 'pbeg':
+            printf("Play Session Begin.\n", payload);
+            break;
+          case 'aend':
+            printf("Exit Active State.\n", payload);
+            break;
+          case 'abeg':
+            printf("Enter Active State.\n", payload);
             break;
           default: {
             char codestring[5];
