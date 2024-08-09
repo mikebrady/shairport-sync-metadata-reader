@@ -368,25 +368,25 @@ int main(int argc, char *argv[]) {
             printf("Play -- first frame received/time in ns: \"%s\".\n", payload);
             break;
           case 'paus':
-            printf("Pause. (AirPlay 2 only.)\n", payload);
+            printf("Pause. (AirPlay 2 only.)\n");
             break;
           case 'pres':
-            printf("Resume. (AirPlay 2 only.)\n", payload);
+            printf("Resume. (AirPlay 2 only.)\n");
             break;
           case 'prsm':
-            printf("Resume.\n", payload);
+            printf("Resume.\n");
             break;
           case 'pend':
-            printf("Play Session End.\n", payload);
+            printf("Play Session End.\n");
             break;
           case 'pbeg':
-            printf("Play Session Begin.\n", payload);
+            printf("Play Session Begin.\n");
             break;
           case 'aend':
-            printf("Exit Active State.\n", payload);
+            printf("Exit Active State.\n");
             break;
           case 'abeg':
-            printf("Enter Active State.\n", payload);
+            printf("Enter Active State.\n");
             break;
           default: {
             char codestring[5];
