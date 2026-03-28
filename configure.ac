@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.68])
-AC_INIT([shairport-sync-metadata-reader], [1.0.2], [mikebrady@eircom.net])
+AC_PREREQ([2.50])
+AC_INIT([shairport-sync-metadata-reader], [1.0.3], [4265913+mikebrady@users.noreply.github.com])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([shairport-sync-metadata-reader.c])
 AC_CONFIG_HEADERS([config.h])

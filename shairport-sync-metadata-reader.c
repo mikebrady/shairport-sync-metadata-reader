@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015-22 Mike Brady
+Copyright (c) 2015-26 Mike Brady
 
 A text-only sample metadata player for Shairport Sync
 
@@ -36,17 +36,15 @@ THE SOFTWARE.
 // http://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
 // minor mods to make independent of C99.
 // more significant changes make it not malloc memory
-// needs to initialise the docoding table first
+// discarded base64_encode for this application
 
 static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
                                 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
                                 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
                                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
-static int decoding_table[256]; // an incoming char can range over ASCII, but by mistake could be
-                                // all 8 bits.
-
-static int mod_table[] = {0, 2, 1};
+static unsigned int decoding_table[256]; // an incoming char can range over ASCII, but by mistake
+                                         // could be all 8 bits.
 
 void initialise_decoding_table() {
   int i;
@@ -56,39 +54,7 @@ void initialise_decoding_table() {
 
 // pass in a pointer to the data, its length, a pointer to the output buffer and a pointer to an int
 // containing its maximum length the actual length will be returned.
-
-char *base64_encode(const unsigned char *data, size_t input_length, char *encoded_data,
-                    size_t *output_length) {
-
-  size_t calculated_output_length = 4 * ((input_length + 2) / 3);
-  if (calculated_output_length > *output_length)
-    return (NULL);
-  *output_length = calculated_output_length;
-
-  int i, j;
-  for (i = 0, j = 0; i < input_length;) {
-
-    uint32_t octet_a = i < input_length ? (unsigned char)data[i++] : 0;
-    uint32_t octet_b = i < input_length ? (unsigned char)data[i++] : 0;
-    uint32_t octet_c = i < input_length ? (unsigned char)data[i++] : 0;
-
-    uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
-
-    encoded_data[j++] = encoding_table[(triple >> 3 * 6) & 0x3F];
-    encoded_data[j++] = encoding_table[(triple >> 2 * 6) & 0x3F];
-    encoded_data[j++] = encoding_table[(triple >> 1 * 6) & 0x3F];
-    encoded_data[j++] = encoding_table[(triple >> 0 * 6) & 0x3F];
-  }
-
-  for (i = 0; i < mod_table[input_length % 3]; i++)
-    encoded_data[*output_length - 1 - i] = '=';
-
-  return encoded_data;
-}
-
-// pass in a pointer to the data, its length, a pointer to the output buffer and a pointer to an int
-// containing its maximum length the actual length will be returned.
-int base64_decode(const char *data, size_t input_length, unsigned char *decoded_data,
+int base64_decode(const unsigned char *data, size_t input_length, unsigned char *decoded_data,
                   size_t *output_length) {
 
   // remember somewhere to call initialise_decoding_table();
@@ -105,7 +71,7 @@ int base64_decode(const char *data, size_t input_length, unsigned char *decoded_
     return (-1);
   *output_length = calculated_output_length;
 
-  int i, j;
+  size_t i, j;
   for (i = 0, j = 0; i < input_length;) {
 
     uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
@@ -128,68 +94,59 @@ int base64_decode(const char *data, size_t input_length, unsigned char *decoded_
 }
 
 int main(int argc, char *argv[]) {
-  fd_set rfds;
-  int retval;
-
   initialise_decoding_table();
-
   while (1) {
     char str[1025];
+    char alt[1025];
     if (fgets(str, 1024, stdin)) {
-      uint32_t type, code, length;
-      char tagend[1024];
-      int ret = sscanf(str, "<item><type>%8x</type><code>%8x</code><length>%u</length>", &type,
+      uint32_t type, code;
+      size_t length;
+      int ret = sscanf(str, "<item><type>%8x</type><code>%8x</code><length>%zu</length>", &type,
                        &code, &length);
       if (ret == 3) {
+
         // now, think about processing the tag.
         // basically, we need to get hold of the base-64 data, if any
         size_t outputlength = 0;
-        char payload[32769];
+        char *payload = malloc(length + 1);
         if (length > 0) {
-          // get the next line, which should be a data tag
-          char datatagstart[64], datatagend[64];
-          memset(datatagstart, 0, 64);
-          int rc = fscanf(stdin, "<data encoding=\"base64\">");
-          if (rc == 0) {
-            // now, read in that big (possibly) base64 buffer
-            int c = fgetc(stdin);
+
+          fgets(alt, 1024, stdin);
+          if (strcmp(alt, "<data encoding=\"base64\">\n") == 0) {
+            /*
+            // get the next line, which should be a data tag
+            int rc = fscanf(stdin, "<data encoding=\"base64\">");
+            if (rc == 0) {
+              // now, read in that big (possibly) base64 buffer
+              int c = fgetc(stdin); // skip the newline
+            */
+
             uint32_t b64size = 4 * ((length + 2) / 3);
-            char *b64buf = malloc(b64size + 1);
-            memset(b64buf, 0, b64size + 1);
+            void *b64buf = malloc(b64size + 1);
             if (b64buf) {
+              // this reads b64size bytes only
               if (fgets(b64buf, b64size + 1, stdin) != NULL) {
                 // it looks like we got it
-                // printf("Looks like we got it, with a buffer size of %u.\n",b64size);
-                // puts(b64buf);
-                // printf("\n");
-                // now, if it's not a picture, let's try to decode it.
-                if (code != 'PICT') {
-                  int inputlength = 32768;
-                  if (b64size < inputlength)
-                    inputlength = b64size;
-                  outputlength = 32768;
-                  if (base64_decode(b64buf, inputlength, payload, &outputlength) != 0) {
-                    printf("Failed to decode it.\n");
-                  }
+                outputlength = length; // max size
+                if (base64_decode(b64buf, b64size, (unsigned char *)payload, &outputlength) != 0) {
+                  printf("Failed to decode it.\n");
                 }
               }
               free(b64buf);
             } else {
               printf("couldn't allocate memory for base-64 stuff\n");
             }
-            rc = fscanf(stdin, "%64s", datatagend);
-            if (strcmp(datatagend, "</data></item>") != 0)
-              printf("End data tag not seen, \"%s\" seen instead.\n", datatagend);
+            fgets(str, 1024, stdin);
+            if (strcmp(str, "</data></item>\n") != 0)
+              printf("End data tag not seen, \"%s\" seen instead.\n", str);
             // now, there will either be a line feed or nothing at the end of this line
             // it's not necessary XML, but it's what Shairport Sync puts out, and it makes life a
             // bit easier So, if there's something there and it's not just a linefeed, it's an error
-            if ((fgets(str, 1024, stdin) != NULL) && ((strlen(str) != 1) || (str[0] != 0x0A)))
-              printf("Error -- unexpected characters at the end of a base64 section.\n");
+            // if ((fgets(str, 1024, stdin) != NULL) && ((strlen(str) != 1) || (str[0] != 0x0A)))
+            //  printf("Error -- unexpected characters at the end of a base64 section.\n");
           }
         }
-
-        // printf("Got it decoded. Length of decoded string is %u bytes.\n",outputlength);
-        payload[outputlength] = 0;
+        payload[outputlength] = 0; // put a null on the end of the payload
         if ((argc == 2) && (strcmp(argv[1], "--raw") == 0)) {
           char typestring[5];
           *(uint32_t *)typestring = htonl(type);
@@ -198,17 +155,17 @@ int main(int argc, char *argv[]) {
           *(uint32_t *)codestring = htonl(code);
           codestring[4] = 0;
           if (length > 0) {
-            int buffer_length = 128; // item size is two bytes
+            size_t buffer_length = 128; // item size is two bytes
             char obf[buffer_length * 2 + 1];
             char *obfp = obf;
-            int obfc;
+            size_t obfc;
             for (obfc = 0; ((obfc < length) && (obfc < buffer_length)); obfc++) {
               snprintf(obfp, 3, "%02X", payload[obfc]);
               obfp += 2;
             };
             *obfp = 0;
             if (length > buffer_length)
-              printf("\"%s\" \"%s\": 0x%s... (%d bytes in payload)\n", typestring, codestring, obf,
+              printf("\"%s\" \"%s\": 0x%s... (%zu bytes in payload)\n", typestring, codestring, obf,
                      length);
             else
               printf("\"%s\" \"%s\": 0x%s\n", typestring, codestring, obf);
@@ -245,8 +202,7 @@ int main(int argc, char *argv[]) {
           case 'astm': {
             uint32_t tracklength = ntohl(*(uint32_t *)payload);
             printf("Track length: %" PRIu32 " milliseconds.\n", tracklength);
-            }
-            break;
+          } break;
           case 'asul':
             printf("URL: \"%s\".\n", payload);
             break;
@@ -272,7 +228,9 @@ int main(int argc, char *argv[]) {
             printf("File kind: \"%s\".\n", payload);
             break;
           case 'asdk':
-            printf("Song Data Kind (\"asdk\"): (possibly 0 == timed track, 1 == untimed stream): \"%u\".\n", payload[0]);
+            printf("Song Data Kind (\"asdk\"): (possibly 0 == timed track, 1 == untimed stream): "
+                   "\"%u\".\n",
+                   payload[0]);
             break;
           case 'assn':
             printf("Sort as: \"%s\".\n", payload);
@@ -282,15 +240,17 @@ int main(int argc, char *argv[]) {
             *(uint32_t *)codestring = htonl(code);
             codestring[4] = 0;
             if (length > 0) {
-              char obf[4096];
+              size_t buffer_length = 128;
+              char obf[buffer_length * 2 + 1];
               char *obfp = obf;
-              int obfc;
-              for (obfc = 0; obfc < length; obfc++) {
+              size_t obfc;
+              for (obfc = 0; ((obfc < length) && (obfc < buffer_length)); obfc++) {
                 snprintf(obfp, 3, "%02X", payload[obfc]);
                 obfp += 2;
               };
               *obfp = 0;
-              printf("\"core\" \"%s\": 0x%s\n", codestring, obf);
+              printf("\"core\" \"%s\": 0x%s%s\n", codestring, obf,
+                     length > buffer_length ? "..." : "");
             } else {
               printf("\"core\" \"%s\"\n", codestring);
             }
@@ -299,7 +259,7 @@ int main(int argc, char *argv[]) {
         } else if (type == 'ssnc') {
           switch (code) {
           case 'PICT':
-            printf("Picture received, length %u bytes.\n", length);
+            printf("Picture received, length %zu bytes.\n", length);
             break;
           case 'clip':
             printf("The AirPlay client at \"%s\" has connected to this player.\n", payload);
@@ -332,12 +292,13 @@ int main(int argc, char *argv[]) {
             printf("The service name of this player is: \"%s\".\n", payload);
             break;
           case 'conn':
-            printf(
-                "The AirPlay client at \"%s\" is about to connect to this player. (AirPlay 2 only.)\n",
-                payload);
+            printf("The AirPlay client at \"%s\" is about to connect to this player. (AirPlay 2 "
+                   "only.)\n",
+                   payload);
             break;
           case 'disc':
-            printf("The AirPlay client at \"%s\" has disconnected from this player. (AirPlay 2 only.)\n",
+            printf("The AirPlay client at \"%s\" has disconnected from this player. (AirPlay 2 "
+                   "only.)\n",
                    payload);
             break;
           case 'cdid':
@@ -393,15 +354,18 @@ int main(int argc, char *argv[]) {
             *(uint32_t *)codestring = htonl(code);
             codestring[4] = 0;
             if (length > 0) {
-              char obf[4096];
+              // if (0) {
+              size_t buffer_length = 128;
+              char obf[buffer_length * 2 + 1];
               char *obfp = obf;
-              int obfc;
-              for (obfc = 0; obfc < length; obfc++) {
+              size_t obfc;
+              for (obfc = 0; ((obfc < length) && (obfc < buffer_length)); obfc++) {
                 snprintf(obfp, 3, "%02X", payload[obfc]);
                 obfp += 2;
               };
               *obfp = 0;
-              printf("\"ssnc\" \"%s\": 0x%s\n", codestring, obf);
+              printf("\"ssnc\" \"%s\": 0x%s%s\n", codestring, obf,
+                     length > buffer_length ? "..." : "");
             } else {
               printf("\"ssnc\" \"%s\"\n", codestring);
             }
@@ -411,6 +375,8 @@ int main(int argc, char *argv[]) {
           str[1024] = '\0';
           printf("\nXXX Could not recognize: \"%s\".\n", str);
         }
+        free(payload);
+        payload = NULL;
       } else {
         str[1024] = '\0';
         printf("\nXXX Could not decipher: \"%s\".\n", str);
