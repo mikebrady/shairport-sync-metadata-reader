@@ -76,8 +76,9 @@ The next two two tokens are to facilitiate remote control of the source. There i
 Building Instructions
 =====
 ```
-$autoreconf -i -f
-$./configure
-$make
-$sudo make install
+$ autoreconf -i -f
+$ ./configure
+$ make
+$ sudo make install
 ```
+**Note** Add `--with-plist-pretty-printing` to the ./configure line to include pretty-printing of data itesm that are composed on binary plists.
