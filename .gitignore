@@ -15,3 +15,5 @@ install-sh
 missing
 stamp-h1
 .deps
+INSTALL
+utilities/*.o
