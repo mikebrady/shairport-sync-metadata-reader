@@ -31,6 +31,13 @@ THE SOFTWARE.
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#ifdef WITH_PLIST_PRETTY_PRINTING
+#include <plist/plist.h>
+#ifdef HAVE_LIBPLIST_GE_2_3_0
+#define plist_from_memory(plist_data, length, plist)                                               \
+  plist_from_memory((plist_data), (length), (plist), NULL)
+#endif
+#endif
 
 // From Stack Overflow, with thanks:
 // http://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
@@ -93,7 +100,76 @@ int base64_decode(const unsigned char *data, size_t input_length, unsigned char 
   return 0;
 }
 
+#ifdef WITH_PLIST_PRETTY_PRINTING
+
+#endif
+
+void default_print_payload(uint32_t type, uint32_t code, const char *payload, const size_t length) {
+  char typestring[5];
+  *(uint32_t *)typestring = htonl(type);
+  typestring[4] = 0;
+  char codestring[5];
+  *(uint32_t *)codestring = htonl(code);
+  codestring[4] = 0;
+  if (length > 0) {
+
+#ifdef WITH_PLIST_PRETTY_PRINTING
+
+    if (length > strlen("bplist00")) {
+      if (strncmp(payload, "bplist00", strlen("bplist00")) == 0) {
+        plist_t plist = NULL;
+        plist_from_memory(payload, length, &plist);
+        if (plist) {
+          uint32_t size;
+          char *plist_out = NULL;
+          plist_to_xml(plist, &plist_out, &size);
+          if (plist_out) {
+            char *reply = malloc(size + 1);
+            if (reply) {
+              memcpy(reply, plist_out, size);
+              reply[size] = '\0';
+              printf("\"%s\" \"%s\", plist:\n--\n%s--\n", typestring, codestring, reply);
+              free(reply);
+            } else {
+              debug(1, "can't allocate memory for XML");
+            }
+            free(plist_out);
+          } else {
+            debug(1, "con't convert plist to XML");
+          }
+          plist_free(plist);
+        } else {
+          debug(1, "can't decipher plist");
+        }
+      }
+    } else {
+#endif
+      size_t buffer_length = 128; // item size is two bytes
+      char obf[buffer_length * 2 + 1];
+      char *obfp = obf;
+      size_t obfc;
+      for (obfc = 0; ((obfc < length) && (obfc < buffer_length)); obfc++) {
+        snprintf(obfp, 3, "%02X", payload[obfc]);
+        obfp += 2;
+      };
+      *obfp = 0;
+      if (length > buffer_length)
+        printf("\"%s\" \"%s\": 0x%s... (%zu bytes in payload)\n", typestring, codestring, obf,
+               length);
+      else
+        printf("\"%s\" \"%s\": 0x%s\n", typestring, codestring, obf);
+#ifdef WITH_PLIST_PRETTY_PRINTING
+    }
+#endif
+  } else {
+    printf("\"%s\" \"%s\"\n", typestring, codestring);
+  }
+}
+
 int main(int argc, char *argv[]) {
+  // initialise debug messages stuff
+  // debug_init(int level, int show_elapsed_time, int show_relative_time, int show_file_and_line)
+  debug_init(0, 0, 1, 1);
   initialise_decoding_table();
   while (1) {
     char str[1025];
@@ -148,30 +224,7 @@ int main(int argc, char *argv[]) {
         }
         payload[outputlength] = 0; // put a null on the end of the payload
         if ((argc == 2) && (strcmp(argv[1], "--raw") == 0)) {
-          char typestring[5];
-          *(uint32_t *)typestring = htonl(type);
-          typestring[4] = 0;
-          char codestring[5];
-          *(uint32_t *)codestring = htonl(code);
-          codestring[4] = 0;
-          if (length > 0) {
-            size_t buffer_length = 128; // item size is two bytes
-            char obf[buffer_length * 2 + 1];
-            char *obfp = obf;
-            size_t obfc;
-            for (obfc = 0; ((obfc < length) && (obfc < buffer_length)); obfc++) {
-              snprintf(obfp, 3, "%02X", payload[obfc]);
-              obfp += 2;
-            };
-            *obfp = 0;
-            if (length > buffer_length)
-              printf("\"%s\" \"%s\": 0x%s... (%zu bytes in payload)\n", typestring, codestring, obf,
-                     length);
-            else
-              printf("\"%s\" \"%s\": 0x%s\n", typestring, codestring, obf);
-          } else {
-            printf("\"%s\" \"%s\"\n", typestring, codestring);
-          }
+          default_print_payload(type, code, payload, outputlength);
         } else if (type == 'core') {
           // this has more information about tags, which might be relevant:
           // https://code.google.com/p/ytrack/wiki/DMAP
@@ -235,26 +288,9 @@ int main(int argc, char *argv[]) {
           case 'assn':
             printf("Sort as: \"%s\".\n", payload);
             break;
-          default: {
-            char codestring[5];
-            *(uint32_t *)codestring = htonl(code);
-            codestring[4] = 0;
-            if (length > 0) {
-              size_t buffer_length = 128;
-              char obf[buffer_length * 2 + 1];
-              char *obfp = obf;
-              size_t obfc;
-              for (obfc = 0; ((obfc < length) && (obfc < buffer_length)); obfc++) {
-                snprintf(obfp, 3, "%02X", payload[obfc]);
-                obfp += 2;
-              };
-              *obfp = 0;
-              printf("\"core\" \"%s\": 0x%s%s\n", codestring, obf,
-                     length > buffer_length ? "..." : "");
-            } else {
-              printf("\"core\" \"%s\"\n", codestring);
-            }
-          } break;
+          default:
+            default_print_payload(type, code, payload, outputlength);
+            break;
           }
         } else if (type == 'ssnc') {
           switch (code) {
@@ -349,27 +385,9 @@ int main(int argc, char *argv[]) {
           case 'abeg':
             printf("Enter Active State.\n");
             break;
-          default: {
-            char codestring[5];
-            *(uint32_t *)codestring = htonl(code);
-            codestring[4] = 0;
-            if (length > 0) {
-              // if (0) {
-              size_t buffer_length = 128;
-              char obf[buffer_length * 2 + 1];
-              char *obfp = obf;
-              size_t obfc;
-              for (obfc = 0; ((obfc < length) && (obfc < buffer_length)); obfc++) {
-                snprintf(obfp, 3, "%02X", payload[obfc]);
-                obfp += 2;
-              };
-              *obfp = 0;
-              printf("\"ssnc\" \"%s\": 0x%s%s\n", codestring, obf,
-                     length > buffer_length ? "..." : "");
-            } else {
-              printf("\"ssnc\" \"%s\"\n", codestring);
-            }
-          } break;
+          default:
+            default_print_payload(type, code, payload, outputlength);
+            break;
           }
         } else {
           str[1024] = '\0';
