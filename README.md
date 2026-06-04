@@ -81,4 +81,4 @@ $ ./configure
 $ make
 $ sudo make install
 ```
-**Note** Add `--with-plist-pretty-printing` to the ./configure line to include pretty-printing of data itesm that are composed on binary plists.
+**Note:** Add `--with-plist-pretty-printing` to the `./configure` line to include pretty-printing of data itesm that are composed of binary plists.
