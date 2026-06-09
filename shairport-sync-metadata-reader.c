@@ -115,32 +115,30 @@ void default_print_payload(uint32_t type, uint32_t code, const char *payload, co
 
 #ifdef WITH_PLIST_PRETTY_PRINTING
 
-    if (length > strlen("bplist00")) {
-      if (strncmp(payload, "bplist00", strlen("bplist00")) == 0) {
-        plist_t plist = NULL;
-        plist_from_memory(payload, length, &plist);
-        if (plist) {
-          uint32_t size;
-          char *plist_out = NULL;
-          plist_to_xml(plist, &plist_out, &size);
-          if (plist_out) {
-            char *reply = malloc(size + 1);
-            if (reply) {
-              memcpy(reply, plist_out, size);
-              reply[size] = '\0';
-              printf("\"%s\" \"%s\", plist:\n--\n%s--\n", typestring, codestring, reply);
-              free(reply);
-            } else {
-              debug(1, "can't allocate memory for XML");
-            }
-            free(plist_out);
+    if ((length > strlen("bplist00")) && (strncmp(payload, "bplist00", strlen("bplist00")) == 0)) {
+      plist_t plist = NULL;
+      plist_from_memory(payload, length, &plist);
+      if (plist) {
+        uint32_t size;
+        char *plist_out = NULL;
+        plist_to_xml(plist, &plist_out, &size);
+        if (plist_out) {
+          char *reply = malloc(size + 1);
+          if (reply) {
+            memcpy(reply, plist_out, size);
+            reply[size] = '\0';
+            printf("\"%s\" \"%s\", plist:\n--\n%s--\n", typestring, codestring, reply);
+            free(reply);
           } else {
-            debug(1, "con't convert plist to XML");
+            debug(1, "can't allocate memory for XML");
           }
-          plist_free(plist);
+          free(plist_out);
         } else {
-          debug(1, "can't decipher plist");
+          debug(1, "con't convert plist to XML");
         }
+        plist_free(plist);
+      } else {
+        debug(1, "can't decipher plist");
       }
     } else {
 #endif
