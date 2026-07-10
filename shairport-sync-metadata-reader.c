@@ -31,12 +31,9 @@ THE SOFTWARE.
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <locale.h>
 #ifdef WITH_PLIST_PRETTY_PRINTING
-#include <plist/plist.h>
-#ifdef HAVE_LIBPLIST_GE_2_3_0
-#define plist_from_memory(plist_data, length, plist)                                               \
-  plist_from_memory((plist_data), (length), (plist), NULL)
-#endif
+#include "utilities/bplist-print.h"
 #endif
 
 // From Stack Overflow, with thanks:
@@ -114,32 +111,9 @@ void default_print_payload(uint32_t type, uint32_t code, const char *payload, co
   if (length > 0) {
 
 #ifdef WITH_PLIST_PRETTY_PRINTING
-
     if ((length > strlen("bplist00")) && (strncmp(payload, "bplist00", strlen("bplist00")) == 0)) {
-      plist_t plist = NULL;
-      plist_from_memory(payload, length, &plist);
-      if (plist) {
-        uint32_t size;
-        char *plist_out = NULL;
-        plist_to_xml(plist, &plist_out, &size);
-        if (plist_out) {
-          char *reply = malloc(size + 1);
-          if (reply) {
-            memcpy(reply, plist_out, size);
-            reply[size] = '\0';
-            printf("\"%s\" \"%s\", plist:\n--\n%s--\n", typestring, codestring, reply);
-            free(reply);
-          } else {
-            debug(1, "can't allocate memory for XML");
-          }
-          free(plist_out);
-        } else {
-          debug(1, "con't convert plist to XML");
-        }
-        plist_free(plist);
-      } else {
-        debug(1, "can't decipher plist");
-      }
+      printf("\"%s\" \"%s\":\n", typestring, codestring);
+      pretty_print_binary_plist(payload, length, 1);
     } else {
 #endif
       size_t buffer_length = 128; // item size is two bytes
@@ -165,6 +139,7 @@ void default_print_payload(uint32_t type, uint32_t code, const char *payload, co
 }
 
 int main(int argc, char *argv[]) {
+  setlocale(LC_ALL, "");
   // initialise debug messages stuff
   // debug_init(int level, int show_elapsed_time, int show_relative_time, int show_file_and_line)
   debug_init(0, 0, 1, 1);
@@ -228,19 +203,6 @@ int main(int argc, char *argv[]) {
           // https://code.google.com/p/ytrack/wiki/DMAP
           switch (code) {
           case 'mper': {
-
-            // the following is just diagnostic
-            // {
-            // printf("'mper' payload is %d bytes long: ", length);
-            // char* p = payload;
-            // int c;
-            // for (c=0; c < length; c++) {
-            //   printf("%02x", *p);
-            //   p++;
-            // }
-            // printf("\n");
-            // }
-
             // get the 64-bit number as a uint64_t by reading two uint32_t s and combining them
             uint64_t vl = ntohl(*(uint32_t *)payload); // get the high order 32 bits
             vl = vl << 32;                             // shift them into the correct location
