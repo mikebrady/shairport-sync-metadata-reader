@@ -18,3 +18,4 @@ stamp-h1
 INSTALL
 utilities/*.o
 build/
+.dirstamp
