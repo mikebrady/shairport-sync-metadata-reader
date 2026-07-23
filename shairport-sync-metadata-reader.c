@@ -32,9 +32,9 @@ THE SOFTWARE.
 #include <sys/types.h>
 #include <unistd.h>
 #include <locale.h>
-#ifdef WITH_PLIST_PRETTY_PRINTING
 #include "utilities/bplist-print.h"
-#endif
+
+static int raw = 0; // set to 1 if you want raw output
 
 // From Stack Overflow, with thanks:
 // http://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
@@ -97,10 +97,6 @@ int base64_decode(const unsigned char *data, size_t input_length, unsigned char 
   return 0;
 }
 
-#ifdef WITH_PLIST_PRETTY_PRINTING
-
-#endif
-
 void default_print_payload(uint32_t type, uint32_t code, const char *payload, const size_t length) {
   char typestring[5];
   *(uint32_t *)typestring = htonl(type);
@@ -110,12 +106,11 @@ void default_print_payload(uint32_t type, uint32_t code, const char *payload, co
   codestring[4] = 0;
   if (length > 0) {
 
-#ifdef WITH_PLIST_PRETTY_PRINTING
-    if ((length > strlen("bplist00")) && (strncmp(payload, "bplist00", strlen("bplist00")) == 0)) {
+    // try to interpret plists in the feed if we have pretty printing and we're not asking for raw
+    if ((raw == 0) && (length > strlen("bplist00")) && (strncmp(payload, "bplist00", strlen("bplist00")) == 0)) {
       printf("\"%s\" \"%s\":\n", typestring, codestring);
       pretty_print_binary_plist(payload, length, 1);
     } else {
-#endif
       size_t buffer_length = 128; // item size is two bytes
       char obf[buffer_length * 2 + 1];
       char *obfp = obf;
@@ -130,9 +125,7 @@ void default_print_payload(uint32_t type, uint32_t code, const char *payload, co
                length);
       else
         printf("\"%s\" \"%s\": 0x%s\n", typestring, codestring, obf);
-#ifdef WITH_PLIST_PRETTY_PRINTING
     }
-#endif
   } else {
     printf("\"%s\" \"%s\"\n", typestring, codestring);
   }
@@ -144,6 +137,9 @@ int main(int argc, char *argv[]) {
   // debug_init(int level, int show_elapsed_time, int show_relative_time, int show_file_and_line)
   debug_init(0, 0, 1, 1);
   initialise_decoding_table();
+  if ((argc == 2) && (strcmp(argv[1], "--raw") == 0)) {
+          raw = 1;
+  }
   while (1) {
     char str[1025];
     char alt[1025];
@@ -196,7 +192,7 @@ int main(int argc, char *argv[]) {
           }
         }
         payload[outputlength] = 0; // put a null on the end of the payload
-        if ((argc == 2) && (strcmp(argv[1], "--raw") == 0)) {
+        if (raw != 0) {
           default_print_payload(type, code, payload, outputlength);
         } else if (type == 'core') {
           // this has more information about tags, which might be relevant:
@@ -344,6 +340,10 @@ int main(int argc, char *argv[]) {
             break;
           case 'abeg':
             printf("Enter Active State.\n");
+            break;
+          case 'copl':
+            printf("COMMAND Message Plist.\n");
+            pretty_print_binary_plist(payload, length, 1);
             break;
           default:
             default_print_payload(type, code, payload, outputlength);

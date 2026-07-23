@@ -17,3 +17,4 @@ stamp-h1
 .deps
 INSTALL
 utilities/*.o
+build/

@@ -15,12 +15,6 @@ AC_PROG_INSTALL
 
 # Checks for libraries.
 
-# Look for plist decoding option
-AC_ARG_WITH(plist-pretty-printing, [AS_HELP_STRING([--with-plist-pretty-printing],[build with support for pretty-printing Binary Plists])])
-if test "x$with_plist_pretty_printing" = "xyes" ; then
-AC_DEFINE([WITH_PLIST_PRETTY_PRINTING], 1, [support pretty-printing Binary Plists.])
-fi
-
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h sys/time.h unistd.h])
 
