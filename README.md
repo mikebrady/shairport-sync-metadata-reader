@@ -72,6 +72,7 @@ The next two two tokens are to facilitiate remote control of the source. There i
  * `conn` -- the payload is the IP number of the client, i.e. the sender of audio. Can be an IPv4 or an IPv6 number. This is an AirPlay-2-only message. It is sent as soon as the client requests access to the player. If Shairport Sync is already playing, this message is sent before the current play session is stopped.
  * `svip` -- the payload is the IP number of the server, i.e. the player itself. Can be an IPv4 or an IPv6 number.
  * `disc` -- the payload is the IP number of the client, i.e. the sender of audio. Can be an IPv4 or an IPv6 number. This is an AirPlay-2-only message. It is sent when a client has been disconnected.
+ * `copl` -- a plist sent as the payload of an RTSP `COMMAND` message. This can contain a good deal of metadata about what is playing and what commands are available. The plist is pretty-printed. 
 
 Building Instructions
 =====
@@ -81,4 +82,3 @@ $ ./configure
 $ make
 $ sudo make install
 ```
-**Note:** Add `--with-plist-pretty-printing` to the `./configure` line to include pretty-printing of items composed of binary plists. The plists are rendered in XML, which is hopefully a bit more readable.
