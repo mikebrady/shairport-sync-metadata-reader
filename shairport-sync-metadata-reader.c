@@ -361,6 +361,13 @@ int main(int argc, char *argv[]) {
       }
       // flush stdout, to be able to pipe it later
       fflush(stdout);
+    } else {
+      // fgets() returned NULL — EOF (writer closed) or a read error.
+      // Without clearerr(), stdin's EOF flag stays latched and every future
+      // fgets() call returns NULL immediately without re-reading the pipe,
+      // even after a new writer (a restarted Shairport Sync) reopens it.
+      clearerr(stdin);
+      usleep(100000); // avoid spinning at 100% CPU while waiting for a writer
     }
   }
   return 0;
