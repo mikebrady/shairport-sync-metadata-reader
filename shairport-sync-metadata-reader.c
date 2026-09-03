@@ -284,20 +284,18 @@ int main(int argc, char *argv[]) {
             printf("The service name of this player is: \"%s\".\n", payload);
             break;
           case 'conn':
-            printf("The AirPlay client at \"%s\" is about to connect to this player. (AirPlay 2 "
-                   "only.)\n",
+            printf("The AirPlay client at \"%s\" is about to connect to this player.\n",
                    payload);
             break;
           case 'disc':
-            printf("The AirPlay client at \"%s\" has disconnected from this player. (AirPlay 2 "
-                   "only.)\n",
+            printf("The AirPlay client at \"%s\" has disconnected from this player.\n",
                    payload);
             break;
           case 'cdid':
-            printf("The AirPlay client's Device ID is \"%s\". (AirPlay 2 only.)\n", payload);
+            printf("The AirPlay client's Device ID is \"%s\".\n", payload);
             break;
           case 'cmac':
-            printf("The AirPlay client's MAC address is \"%s\". (AirPlay 2 only.)\n", payload);
+            printf("The AirPlay client's MAC address is \"%s\".\n", payload);
             break;
           case 'prgr':
             printf("Progress String \"%s\".\n", payload);
