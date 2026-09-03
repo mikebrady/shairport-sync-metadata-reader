@@ -205,9 +205,21 @@ int main(int argc, char *argv[]) {
             uint64_t ul =
                 ntohl(*(uint32_t *)(payload + sizeof(uint32_t))); // and the low order 32 bits
             vl = vl + ul;
-            printf("Persistent ID: 0x%" PRIx64 ".\n", vl);
+            printf("Persistent ID: %" PRIu64 " (0x%" PRIx64 ").\n", vl, vl);
 
           } break;
+          case 'astn':
+            {
+              uint16_t track = ntohs(*(uint16_t *)payload);
+              printf("Track number: %" PRIu16 ".\n", track);
+            }
+            break;
+          case 'astc':
+            {
+              uint16_t trackcount = ntohs(*(uint16_t *)payload);
+              printf("Track count: %" PRIu16 ".\n", trackcount);
+            }
+            break;
           case 'astm': {
             uint32_t tracklength = ntohl(*(uint32_t *)payload);
             printf("Track length: %" PRIu32 " milliseconds.\n", tracklength);
@@ -243,6 +255,19 @@ int main(int argc, char *argv[]) {
             break;
           case 'assn':
             printf("Sort as: \"%s\".\n", payload);
+            break;
+          case 'caps':
+            switch (payload[0]) {
+              case 1:
+                printf("Player state: \"Playing\". (Unreliable)\n");
+                break;
+              case 2:
+                printf("Player state: \"Not Playing\". (Unreliable)\n");
+                break;
+              default:
+                printf("Player state: %d. (Significance unknown)\n", payload[0]);
+                break;
+            }
             break;
           default:
             default_print_payload(type, code, payload, outputlength);
@@ -285,6 +310,30 @@ int main(int argc, char *argv[]) {
             break;
           case 'conn':
             printf("The AirPlay client at \"%s\" is about to connect to this player.\n",
+                   payload);
+            break;
+          case 'dapo':
+            if (strcmp(payload, "0") == 0) {
+              printf("No DACP port.\n");
+            } else {
+              printf("DACP port: %s.\n",
+                     payload);
+            }
+            break;
+          case 'snua':
+            printf("User-Agent: \"%s\".\n",
+                   payload);
+            break;
+          case 'acre':
+            printf("Active-Remote: \"%s\".\n",
+                   payload);
+            break;
+          case 'daid':
+            printf("DACP-ID: \"%s\".\n",
+                   payload);
+            break;
+          case 'pfls':
+            printf("Flush to RTP Frame: \"%s\".\n",
                    payload);
             break;
           case 'disc':
